@@ -1,0 +1,14 @@
+
+.streamlit/secrets.toml
+images/
+chroma_db/
+local_models/
+
+
+__pycache__/
+*.pyc
+.env
+.venv/
+env/
+venv/
+.DS_Store

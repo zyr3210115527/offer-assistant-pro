@@ -5,13 +5,12 @@ import glob
 import time
 import uuid
 import io
-from PIL import Image  # 用于图片压缩
+from PIL import Image
 from openai import OpenAI
 import chromadb
 from sentence_transformers import SentenceTransformer
 NUMBER = 5
 
-# ✅ 改为从配置文件读取
 try:
     api_key = st.secrets["ZHIPU_API_KEY"]
 except FileNotFoundError:
@@ -25,48 +24,41 @@ client = OpenAI(
     base_url="https://open.bigmodel.cn/api/paas/v4"
 )
 st.set_page_config(page_title="Offer选大米助手 Pro", layout="wide")
-# 🔴 请在此处填入你的 Key
+
 client = OpenAI(
     api_key=api_key,
     base_url="https://open.bigmodel.cn/api/paas/v4"
 )
 MODEL_NAME = "glm-4.6v-flashx"  
 
-# 图片文件夹路径
+
 IMAGE_FOLDER = "./images"
 DB_PATH = "./chroma_db"
 
 
-# ================= 初始化模型与数据库 =================
+
 
 @st.cache_resource
 def load_embed_model():
-    # 如果想完全离线，请把 'BAAI/bge-m3' 改为本地绝对路径
+
     print("正在加载本地 Embedding 模型 (BGE-M3)...")
     return SentenceTransformer('BAAI/bge-m3')
 
 
 embed_model = load_embed_model()
 
-# 初始化 ChromaDB
 chroma_client = chromadb.PersistentClient(path=DB_PATH)
 collection = chroma_client.get_or_create_collection(name="offer_rag_collection")
 
 
-# ================= 核心工具函数 =================
-
 def encode_image(image_path, max_size=1024):
-    """
-    【核心修复】图片压缩函数
-    将图片长边压缩到 1024px 以内，防止报 Error 400 (Token超限)
-    """
+
     try:
         with Image.open(image_path) as img:
-            # 兼容性处理：如果是 RGBA (透明底)，转成 RGB
+
             if img.mode in ('RGBA', 'P'):
                 img = img.convert('RGB')
 
-            # 计算压缩比例
             width, height = img.size
             if max(width, height) > max_size:
                 scale = max_size / max(width, height)
@@ -74,7 +66,6 @@ def encode_image(image_path, max_size=1024):
                 new_height = int(height * scale)
                 img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
-            # 转为 Base64
             buffered = io.BytesIO()
             img.save(buffered, format="JPEG", quality=85)
             return base64.b64encode(buffered.getvalue()).decode('utf-8')
@@ -90,10 +81,6 @@ def get_embedding(text):
 
 
 def analyze_image_content(image_path):
-    """
-    【建库 Prompt：清洗版】
-    提取纯净的 JSON 数据，过滤掉用户的个人废话（如“本人杭州人”）。
-    """
     base64_img = encode_image(image_path)
     try:
         response = client.chat.completions.create(
@@ -129,7 +116,7 @@ def analyze_image_content(image_path):
             top_p=0.1,  # 极低随机性，保证格式稳定
             temperature=0.1
         )
-        # 清理可能存在的 markdown 符号
+
         content = response.choices[0].message.content
         content = content.replace("```json", "").replace("```", "").strip()
         return content
@@ -157,7 +144,7 @@ def build_database():
     files_to_add = [f for f in image_files if f.lower().endswith(('.png', '.jpg', '.jpeg')) and f not in existing_paths]
 
     if not files_to_add:
-        st.info("📚 数据库已是最新，无需更新。")
+        st.info("数据库已是最新，无需更新。")
         return
 
     # 2. 开始处理
@@ -185,7 +172,7 @@ def build_database():
 
     if ids:
         collection.add(ids=ids, embeddings=embeddings, metadatas=metadatas)
-        st.success(f"🎉 更新完成！清洗并存入了 {new_count} 张 Offer 数据。")
+        st.success(f" 更新完成！清洗并存入了 {new_count} 张 Offer 数据。")
         time.sleep(1)
 
     status_text.empty()
@@ -224,7 +211,7 @@ def chat_pipeline(user_query):
     if target_companies:
         # 如果用户明确提到了公司名（如“字节、快手”），开启严格过滤模式
         filter_instruction = f"""
-        ⚠️【严格过滤指令】
+        【严格过滤指令】
         用户只对以下公司感兴趣：【{'、'.join(target_companies)}】。
         请执行“白名单过滤”：
         1. 仔细阅读下方数据源。
@@ -245,7 +232,7 @@ def chat_pipeline(user_query):
             display_images.append(img_path)
 
             # 调试显示
-            #st.write(f"#### 🕵️‍♂️ 数据源 {i + 1}：")
+            #st.write(f"####  数据源 {i + 1}：")
             #with st.expander("查看原始 JSON"):
             #    st.code(json_data, language='json')
 
@@ -305,13 +292,12 @@ def chat_pipeline(user_query):
 
     return final_response.choices[0].message.content, display_images
 
-# ================= Streamlit 主程序 =================
 def main():
-    st.title("💰 AI Offer 选大米助手 Pro")
+    st.title("AI Offer 选大米助手 Pro")
 
     with st.sidebar:
-        st.header("⚙️ 控制台")
-        if st.button("🔄 读取新图片并更新库"):
+        st.header("控制台")
+        if st.button("读取新图片并更新库"):
             with st.spinner("正在压缩图片并清洗数据，请稍候..."):
                 build_database()
 
@@ -333,12 +319,12 @@ def main():
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         with st.chat_message("assistant"):
-            with st.status("🧠 AI 正在检索并疯狂计算中...", expanded=True) as status:
+            with st.status("AI 正在检索并疯狂计算中...", expanded=True) as status:
                 try:
                     answer, ref_images = chat_pipeline(prompt)
 
                     if ref_images:
-                        st.write(f"🔍 检索到 {len(ref_images)} 张相关 Offer：")
+                        st.write(f"检索到 {len(ref_images)} 张相关 Offer：")
                         cols = st.columns(len(ref_images))
                         for idx, img_path in enumerate(ref_images):
                             # 使用 use_container_width=True 修复布局报错

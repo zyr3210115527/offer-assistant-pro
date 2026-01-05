@@ -3,8 +3,8 @@
 [![GLM-4V](https://img.shields.io/badge/Model-GLM--4V-blue)](https://open.bigmodel.cn/)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-red)](https://streamlit.io/)
 
-> **基于多模态大模型 (GLM-4V) + RAG 的智能 Offer 决策助手。**
-> 解决 Offer 截图隐私清洗、薪资公式解析及多维度对比难题。
+ **基于多模态大模型 (GLM-4V) + RAG 的智能 Offer 决策助手。**
+解决 Offer 截图隐私清洗、薪资公式解析及多维度对比难题。
 
 ## ✨ 核心功能
 - **📸 截图即用**：自动识别 Offer 截图（OCR），提取薪资、职级、地点等硬核数据。

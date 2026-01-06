@@ -1,4 +1,4 @@
-# 💰 AI Offer 选大米助手 Pro
+# 💰 AI Offer 选大米助手 
 
 [![GLM-4V](https://img.shields.io/badge/Model-GLM--4V-blue)](https://open.bigmodel.cn/)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-red)](https://streamlit.io/)
